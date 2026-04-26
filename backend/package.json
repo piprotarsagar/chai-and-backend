@@ -7,7 +7,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.js"
+    "start": "nodemon src/utils/index.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
