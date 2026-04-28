@@ -1,18 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
-import mongoose from "mongoose"
-import express from "express"
-import Connection from "../db/Connection.js" 
 
-const app = express()
-Connection()
- app.on("error",(error)=>{
-         console.log(error);
-       })
-
-app.listen(process.env.PORT || 5000 , ()=>{
-         console.log(`server is running on port ${process.env.PORT}`)
-       })
 
 
 

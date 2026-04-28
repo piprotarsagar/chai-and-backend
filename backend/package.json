@@ -7,13 +7,18 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/utils/index.js"
+    "start": "nodemon src/utils/app.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "ejs": "^5.0.2",
     "express": "^5.2.1",
-    "mongoose": "^9.5.0"
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.5.0",
+    "mongoose-aggregate-paginate-v2": "^1.1.4"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
