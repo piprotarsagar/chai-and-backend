@@ -23,9 +23,16 @@ app.listen(process.env.PORT || 5000 , ()=>{
        }))
 
        app.use(express.json())
-       app.use(urlencoded({extended:true}))
+       app.use(express.urlencoded({extended:true}))
        app.use(express.static("public"))
        app.use(cookieparser())
+
+
+       import userRouter from "../routes/user.routs.js"
+
+       //route declaration using middleware and here userRouterr is controller, here you dont need middlewware that's why this field is empty 
+       app.use("/api/v1/user",userRouter)
+
 
        export default { app }
 
