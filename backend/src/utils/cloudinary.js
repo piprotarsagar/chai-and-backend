@@ -1,33 +1,44 @@
-const cloudinary = require('cloudinary').v2 ;
-import fs from'fs' ;
- 
-/* we are uploaading file from device to locaal server using multer, and then using cloudinary we can upload it into our database,cloudinary is sdk. */
-/* fs is noodes functionality to read write file */
-/* multer is used to upload the file from anypath from device */
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 
-cloudinary.config({ 
-  cloud_name: 'process.env.CLOUD_NAME', 
-  api_key: 'process.env.CLOUD_KEY', 
-  api_secret: 'process.env.CLOUD_SECRET'
-})
+console.log("ENV CHECK:");
+console.log(process.env.CLOUD_NAME);
+console.log(process.env.CLOUD_KEY);
+console.log(process.env.CLOUD_SECRET);
 
-const uploadoncloudinary = async (localpath)=>{
-try{
-    if (!localpath) return null;
-    const result = await cloudinary.uploader.upload(localpath,{
-        resource_type:'auto'
-    })
-    console.log('cludinary upload successful')
-    console.log(result.url)
-   return result ;
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_KEY,
+    api_secret: process.env.CLOUD_SECRET,
+});
 
-}
-catch(err){
-  fs.unlinkSync(localpath)
-  //remove the local file to save system from interpetaation
-   return null;
+console.log("CONFIG:", cloudinary.config());
 
-}
-}
+const uploadoncloudinary = async (localFilePath) => {
 
-export {uploadoncloudinary}
+    try {
+
+        if (!localFilePath) return null;
+
+        const response = await cloudinary.uploader.upload(localFilePath);
+
+        console.log(response.url);
+
+        fs.unlinkSync(localFilePath);
+
+        return response;
+
+    } catch (error) {
+
+        console.log("CLOUDINARY FULL ERROR:");
+        console.log(error);
+
+        if (fs.existsSync(localFilePath)) {
+            fs.unlinkSync(localFilePath);
+        }
+
+        return null;
+    }
+};
+
+export { uploadoncloudinary };

@@ -20,12 +20,12 @@ const UserSchema = new Schema(
             lowercase : true,
             trim : true
         },
-        fullrname:{
+        fullname:{
             type : String,
             required : true,
             trim : true
         },
-        avtar:{
+        avatar:{
             type : String,
             required : true
         },
@@ -42,7 +42,9 @@ const UserSchema = new Schema(
             required : [true,'password is required'],
             unique : true,
         },
-
+        refreshtoken:{
+            type : string
+        }
 
      }
      
@@ -53,11 +55,10 @@ const UserSchema = new Schema(
      /*always take call bake but callbacke don't have this.excess so always use function where you need this.excess*/
      /* ( err, req,res,next )=>{   }    this is middleware in js, this is by default iddlewaare and there exiist third party midddleware also like (cookieparser) , remember this everything you write inside app.use(here) most of the time it's  middleware */
      /* this pre hook comes with problem< it always run when user hit the save, when useer hit save after changing this pre hook alwaays runs and changes the password which we don't want solution :: you can use .isModified('term but always in string') */
-     UserSchema.pre('save' , async function(next){
-            if(!this.isModified('password')) return next();
+     UserSchema.pre('save' , async function(){
+            if(!this.isModified('password')) return;
 
-           this.password =  await bcrypt.hash(this.password,10) 
-        next()
+           this.password =  await bcrypt.hash(this.password,10)
             
      })
 

@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 const Connection = async()=>{
     try{
-  const connect= await mongoose.connect(`${process.env.URI}/admin`)
+  const connect= await mongoose.connect(`${process.env.URI}`)
        console.log(`db is connected successfully !`);
       
     }
