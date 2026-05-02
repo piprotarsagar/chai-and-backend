@@ -20,6 +20,7 @@ const genarateaccessandrefreshtokens = async(userid)=>{
 
     }
     catch(err){
+        console.error("DEBUG ERROR:", err);
         throw new Apierror(401,"error in generating access and refreshtoken")
     }
 }
@@ -123,13 +124,13 @@ if(!user){
     throw new Apierror(404,"user noot found")
 }
 
-const ispassworvalid = await user.isPasswordCorrect(password)
-
-})
+const ispasswordvalid = await user.isPasswordCorrect(password)
 
 if(!ispasswordvalid){
     throw new Apierror(401,"password is  invalid")
 }
+
+
 
 const { accesstoken , refreshtoken } = await genarateaccessandrefreshtokens(user._id)
 
@@ -137,24 +138,27 @@ const loggedinuser = await User.findById(user._id).select("-password -refreshtok
 
 const options = {
     httpOnly : true,
-    secure : true
+    secure : false
 }
+console.log("LOGIN DATA CHECK:", { loggedinuser, accesstoken, refreshtoken });
 
-return res.status(200).cookie("accesstoken", accesstoken,options).cookie("refreshtoken",refreshtoken,options).json(
-    new Apiresponse(200,{user:loggedinuser, accesstoken, refreshtoken},"user logged in successfully")
-)
+return res.status(200)
+    .cookie("accesstoken", accesstoken, options)
+    .cookie("refreshtoken", refreshtoken, options)
+    .json(new Apiresponse(200, { user: loggedinuser, accesstoken, refreshtoken }, "user logged in successfully"));
+    
+})
 
-//logout user
+
+//logout user logic
 
 const logoutUser = asynchandler(async (req,res)=>{
 
     await User.findByIdAndUpdate(req.user._id,{ $set:{refreshtoken:undefined}},{new : "true"})
 
-})
-
-const options = {
+    const options = {
     httpOnly : true,
-    secure : true
+    secure : false
 }
 
 return res.status(200).clearCookie("accesstoken",options)
@@ -162,4 +166,6 @@ return res.status(200).clearCookie("accesstoken",options)
     new Apiresponse(200,{},"cookie successfully removed and user logged out")
 )
 
-export {registeruser,loginUser,logoutUser}
+})
+
+export { registeruser , loginUser , logoutUser }

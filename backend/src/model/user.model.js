@@ -43,7 +43,7 @@ const UserSchema = new Schema(
             unique : true,
         },
         refreshtoken:{
-            type : string
+            type : String
         }
 
      }
@@ -63,14 +63,14 @@ const UserSchema = new Schema(
      })
 
      UserSchema.methods.isPasswordCorrect = async function (password){
-        return await bycrypt.compare( password , this.password )
+        return await bcrypt.compare( password , this.password )
      }
 
 
      /* jwt is use for generate acess and refresh token , method is simpple jwt.sign( {payload} , tokenId , {token expiry} )*/
      UserSchema.methods.getaccesstoken = function(){
 
-        return jwt,sign(
+        return jwt.sign(
             {
                 _id : this._id,
                 email : this.email 
@@ -78,17 +78,17 @@ const UserSchema = new Schema(
             
             process.env.ACCESSTOKEN_SECRET, 
             
-            { expiresIn: process.env.REFRESHTOKEN_EXPIRY })
+            { expiresIn: process.env.ACCESSTOKEN_EXPIRY })
      }
 
      UserSchema.methods.getrefreshtoken = function(){
 
-        return jwt,sign(
+        return jwt.sign(
             {
                 _id : this._id
             },
             
-            process.env.REFRRESHTOKEN_SECRET, 
+            process.env.REFRESHTOKEN_SECRET, 
             
             { expiresIn: process.env.REFRESHTOKEN_EXPIRY })
      }

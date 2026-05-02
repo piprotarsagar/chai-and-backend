@@ -1,7 +1,7 @@
-import { Apierror } from "../utils/Apierror";
-import { asynchandler } from "../utils/asynchandler";
+import { Apierror } from "../utils/Apierror.js";
+import { asynchandler } from "../utils/asynchandler.js";
 import JWT from "jsonwebtoken"
-import { User } from "../model/user.model";
+import { User } from "../model/user.model.js";
 
 export const verifyJWT = asynchandler (async (req,res,next)=>{
    try {
@@ -11,7 +11,7 @@ export const verifyJWT = asynchandler (async (req,res,next)=>{
         if(!token){
             throw new Apierror(401, "you dont have access token")
         }
-
+       console.log("Token received from client:", token);
         const decodedtoken = await JWT.verify(token,process.env.ACCESSTOKEN_SECRET)  
         
         const user = await User.findById(decodedtoken?._id).select("-password -refreshtoken")
@@ -24,7 +24,7 @@ export const verifyJWT = asynchandler (async (req,res,next)=>{
 
         next()
    } catch (error) {
-     throw new Apierror(401,"auth middleware failed")
+    throw new Apierror(401, error?.message || "Invalid access token");
    }
 
 })
