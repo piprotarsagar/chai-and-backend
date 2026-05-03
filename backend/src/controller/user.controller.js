@@ -204,4 +204,97 @@ const refreshaccesstoken = asynchandler(async (req, res) => {
         .json(new Apiresponse(204, { accesstoken, refreshtoken: newrefreshtoken }, "Token refreshed"));
 });
 
-export { registeruser , loginUser , logoutUser, refreshaccesstoken }
+// it  is time to make own middleware 
+
+   //change password middleware
+   const changecurrentpassword = asynchandler(async(req,res)=>{
+
+     const { oldpassword ,newpassword} = req.body
+     if(!(oldpassword || newpassword)){
+        throw new Apierror(401,"cannot get old and new password")
+     } 
+
+     const ispasscorrect = isPasswordCorrect(oldpassword)
+
+     if (ispasscorrect == false){
+        throw new Apierror("401" , "your old pass is not same as your db pass")
+     }
+
+     const user = await User.findByIdAndUpdate(user._id,{
+         $set : {
+            password : newpassword
+         }
+     })
+
+     const options = {
+        httpOnly : true,
+        secure : false
+     }
+   
+     return res.status(205).cookie("user",user,options).json(
+         new Apiresponse(208,{user},"password update successfully") 
+     )
+   })
+
+   //get current user
+   const getcurrentuser = asynchandler(async(req,res)=>{
+    const currentuser = await User.findById(user._id)
+
+    if(!currentuser){
+        throw new Apierror(309,"currrent user not found")
+    }
+
+    return res.status(209).json(
+        new Apiresponse(203,user,"successfully fetching current user")
+    )
+   })
+
+   //update account detail
+   const updateaccountdetail = asynchandler(async(req,res)=>{
+    const {fullname, email} = req.body
+
+        if(!(fullname || email)){
+            throw new Apierror(302,"provide fullname and email please")
+        }
+
+    const user = User.findByIdAndUpdate(req.user._id,{
+        $set : {
+            fullname : fullname,
+            email : email
+        }
+    })
+
+    return res.status(209).json(
+        new Apiresponse(204,user,"updated account detail successfully")
+    )
+
+   })
+ 
+   //update user avatar
+   const updateuseravatar = asynchandler(async(req,res)=>{
+    const avatarlocalpath = req.file.path
+
+    if(!avatarlocalpath){
+            throw new Apierror(302,"provide avatar local path")
+        }
+
+        const avatar = await uploadoncloudinary(avatarlocalpath)
+
+        if(!avatar.url){
+            throw new Apierror(303,"unable to fetch cloudinary avatar url")
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user?._id,{
+                $set :{
+                        avatar : avatar.url
+                        }
+                            }).select("-password")
+
+        return  res.status(210).json(
+            new Apiresponse(201,user,"avatar updated successfully in cloudinary")
+        )
+     
+   })
+
+export { registeruser , loginUser , logoutUser, refreshaccesstoken , changecurrentpassword , getcurrentuser , updateaccountdetail , updateuseravatar}
