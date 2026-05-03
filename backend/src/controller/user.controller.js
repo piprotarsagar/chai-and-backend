@@ -169,43 +169,39 @@ return res.status(200).clearCookie("accesstoken",options)
 })
 
 // Refresh accesstoken
-const refreshaccesstoken = asynchandler ( async(req,res)=>{
-      
-    const incomingrefreshtoken = req.cookies.accesstoken || req.body.accesstoken
+const refreshaccesstoken = asynchandler(async (req, res) => {
+    // 1. Get the REFRESH token (not access) vause accesstokenn is expired
+    const incomingrefreshtoken = req.cookies.refreshtoken || req.body.refreshtoken;
 
-    if(!incomingrefreshtoken){
-        throw Apierror(300,"cannot get incoming refresh access token")
+    if (!incomingrefreshtoken) {
+        throw new Apierror(401, "Refresh token is missing");
     }
 
-    const decodedtoken = Jwt.verify(incomingrefreshtoken,process.env.REFRESHTOKEN_SECRET) 
-    if(!decodedtoken){
-        throw Apierror(301,"problemm in decoded token , verify JWT")
+    // 2. Verify with the correct Secret
+    const decodedtoken = Jwt.verify(incomingrefreshtoken, process.env.REFRESHTOKEN_SECRET);
+
+    // 3. AWAIT is required here
+    const user = await User.findById(decodedtoken?._id);
+
+    if (!user) {
+        throw new Apierror(404, "User not found");
     }
 
-    const user = User.findById(decodedtoken?._id)
-
-    if(!user){
-        throw Apierror(202,"not found user after jwt decode")
+    // 4. Validate against the DB record
+    if (incomingrefreshtoken !== user?.refreshtoken) {
+        throw new Apierror(401, "Refresh token is expired or already used");
     }
 
-    if(incomingrefreshtoken !== user?.refreshtoken){
-     
-        throw Apierror(101,"token not match")
+    // 5. Generate the new set
+    const { accesstoken, refreshtoken: newrefreshtoken } = await genarateaccessandrefreshtokens(user._id);
 
-    }
+    const options = { httpOnly: true, secure: false };
 
-    const options = {
-        httpOnly : true,
-        secure : false
-    }
-
-    const {accesstoken , newrefreshtoken} = await genarateaccessandrefreshtokens(user._id)
-
-    res.status(203).cookie("accesstoken",accesstoken,options).cookie("refreshtoken",newrefreshtoken, options).json(
-        new Apiresponse(204,{accesstoken, refreshtoken : newrefreshtoken},"successfully generating new accesstoken using refreshtoken")
-    )
-
-
-})
+    return res
+        .status(200)
+        .cookie("accesstoken", accesstoken, options)
+        .cookie("refreshtoken", newrefreshtoken, options)
+        .json(new Apiresponse(204, { accesstoken, refreshtoken: newrefreshtoken }, "Token refreshed"));
+});
 
 export { registeruser , loginUser , logoutUser, refreshaccesstoken }
