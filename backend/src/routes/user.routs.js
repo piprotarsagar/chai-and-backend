@@ -2,6 +2,7 @@ import { Router } from "express";
 import { loginUser, logoutUser, registeruser } from "../controller/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
+import { refreshaccesstoken } from "../controller/user.controller.js";
 
 const router = Router();
 
@@ -30,5 +31,6 @@ Then uploaded files become available in : req.files which we can use later    */
 
 router.route("/login").post(loginUser)
 router.route("/logout").post( verifyJWT , logoutUser)
+router.route("/refresh-token").post(refreshaccesstoken)
 
 export default router;

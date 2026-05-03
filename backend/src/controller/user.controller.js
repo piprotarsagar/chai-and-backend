@@ -3,7 +3,7 @@ import { Apierror } from "../utils/Apierror.js";
 import { User } from '../model/user.model.js'
 import { uploadoncloudinary } from "../utils/cloudinary.js";
 import { Apiresponse } from "../utils/Apiresponse.js"
-
+import Jwt from "jsonwebtoken"
 
 const genarateaccessandrefreshtokens = async(userid)=>{
     try{
@@ -168,4 +168,44 @@ return res.status(200).clearCookie("accesstoken",options)
 
 })
 
-export { registeruser , loginUser , logoutUser }
+// Refresh accesstoken
+const refreshaccesstoken = asynchandler ( async(req,res)=>{
+      
+    const incomingrefreshtoken = req.cookies.accesstoken || req.body.accesstoken
+
+    if(!incomingrefreshtoken){
+        throw Apierror(300,"cannot get incoming refresh access token")
+    }
+
+    const decodedtoken = Jwt.verify(incomingrefreshtoken,process.env.REFRESHTOKEN_SECRET) 
+    if(!decodedtoken){
+        throw Apierror(301,"problemm in decoded token , verify JWT")
+    }
+
+    const user = User.findById(decodedtoken?._id)
+
+    if(!user){
+        throw Apierror(202,"not found user after jwt decode")
+    }
+
+    if(incomingrefreshtoken !== user?.refreshtoken){
+     
+        throw Apierror(101,"token not match")
+
+    }
+
+    const options = {
+        httpOnly : true,
+        secure : false
+    }
+
+    const {accesstoken , newrefreshtoken} = await genarateaccessandrefreshtokens(user._id)
+
+    res.status(203).cookie("accesstoken",accesstoken,options).cookie("refreshtoken",newrefreshtoken, options).json(
+        new Apiresponse(204,{accesstoken, refreshtoken : newrefreshtoken},"successfully generating new accesstoken using refreshtoken")
+    )
+
+
+})
+
+export { registeruser , loginUser , logoutUser, refreshaccesstoken }
